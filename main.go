@@ -1,7 +1,60 @@
 package main
 
-import "fmt"
+import (
+	"embed"
+	"encoding/csv"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+	"text/template"
+
+	"github.com/iancoleman/strcase"
+)
+
+//go:embed abstract.proto.tmpl
+var templateFile embed.FS
 
 func main() {
-	fmt.Print("test")
+	var protoOut, csvFileName string
+	flag.StringVar(&protoOut, "o", "abstract.proto", "The output filename.")
+	flag.StringVar(&csvFileName, "f", "", "The input filename.")
+	flag.Parse()
+
+	if csvFileName == "" {
+		log.Panic("No csv file provided.")
+	}
+
+	file, err := os.Open(csvFileName)
+	if err != nil {
+		log.Panicf("Unable to open csv %s\n", csvFileName)
+	}
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		log.Panicf("Error reading records %s", err)
+	}
+
+	log.Println(records)
+
+	t := template.Must(template.ParseFS(templateFile, "abstract.proto.tmpl"))
+	if err != nil {
+		log.Panicf("Error parsing template %s", err)
+	}
+
+	type abstractTmplData struct {
+		ProtoMessageName string
+	}
+
+	protoMessageName := strcase.ToCamel((strings.Split(protoOut, ".")[0]))
+
+	data := abstractTmplData{ProtoMessageName: protoMessageName}
+
+	p, err := os.Create(fmt.Sprintf("./%s", protoOut))
+	if err != nil {
+		log.Panic(err)
+	}
+	t.Execute(p, data)
 }
