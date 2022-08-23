@@ -10,17 +10,19 @@ import (
 
 type abstractTmplData struct {
 	ProtoMessageName string
+	ProtoFields      []protoField
+	Enums            []enum
 }
 
 type protoField struct {
-	fieldType string
-	name      string
-	number    int
+	FieldType string
+	Name      string
+	Number    int
 }
 
 type enum struct {
-	name    string
-	options []string
+	Name    string
+	Options []string
 }
 
 type recordField struct {
@@ -36,6 +38,7 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 
 	// Loop through records to figure out field start and end indices
 	recordFields := getRecordFields(records)
+
 	log.Println(records)
 	log.Println(recordFields)
 
@@ -45,8 +48,8 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 	// Loop through recordFields and generate data
 	for idx, recordField := range recordFields {
 		protoField := protoField{
-			name:   strcase.ToSnake(recordField.name),
-			number: idx + 1,
+			Name:   strcase.ToSnake(recordField.name),
+			Number: idx + 1,
 		}
 
 		switch recordField.recordType {
@@ -61,10 +64,10 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 				enumOptions = append(enumOptions, option)
 			}
 
-			enums = append(enums, enum{name: enumName, options: enumOptions})
-			protoField.fieldType = enumName
+			enums = append(enums, enum{Name: enumName, Options: enumOptions})
+			protoField.FieldType = enumName
 		default:
-			log.Panic("Unrecognized recordType fro recordField")
+			log.Fatal("Unrecognized recordType fro recordField")
 		}
 
 		protoFields = append(protoFields, protoField)
@@ -75,6 +78,8 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 
 	return abstractTmplData{
 		ProtoMessageName: strcase.ToCamel((strings.Split(protoOut, ".")[0])),
+		ProtoFields:      protoFields,
+		Enums:            enums,
 	}
 }
 

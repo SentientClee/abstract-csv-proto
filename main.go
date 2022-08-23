@@ -20,28 +20,28 @@ func main() {
 	flag.Parse()
 
 	if csvFileName == "" {
-		log.Panic("No csv file provided.")
+		log.Fatal("No csv file provided.")
 	}
 
 	file, err := os.Open(csvFileName)
 	if err != nil {
-		log.Panicf("Unable to open csv %s\n", csvFileName)
+		log.Fatalf("Unable to open csv %s\n", csvFileName)
 	}
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		log.Panicf("Error reading records %s", err)
+		log.Fatalf("Error reading records %s", err)
 	}
 
 	t := template.Must(template.ParseFS(templateFile, "abstract.proto.tmpl"))
 	if err != nil {
-		log.Panicf("Error parsing template %s", err)
+		log.Fatalf("Error parsing template %s", err)
 	}
 
 	p, err := os.Create(fmt.Sprintf("./%s", protoOut))
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	t.Execute(p, generateTmplData(protoOut, records))
 }

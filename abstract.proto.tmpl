@@ -1,5 +1,16 @@
 syntax = "proto3";
 package proto.abstracts;
 
-message {{ .ProtoMessageName }} {}
+message {{ .ProtoMessageName }} {
+{{- range .Enums}}
+  enum {{.Name}} {
+  {{- range $idx, $option := .Options}}
+    {{$option}} = {{$idx}};
+  {{- end}}
+  }
+{{end}}
 
+{{- range .ProtoFields}}
+  {{.FieldType}} {{.Name}} = {{.Number}};
+{{end -}}
+}
