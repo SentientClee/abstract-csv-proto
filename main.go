@@ -7,10 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"text/template"
-
-	"github.com/iancoleman/strcase"
 )
 
 //go:embed abstract.proto.tmpl
@@ -37,24 +34,14 @@ func main() {
 		log.Panicf("Error reading records %s", err)
 	}
 
-	log.Println(records)
-
 	t := template.Must(template.ParseFS(templateFile, "abstract.proto.tmpl"))
 	if err != nil {
 		log.Panicf("Error parsing template %s", err)
 	}
 
-	type abstractTmplData struct {
-		ProtoMessageName string
-	}
-
-	protoMessageName := strcase.ToCamel((strings.Split(protoOut, ".")[0]))
-
-	data := abstractTmplData{ProtoMessageName: protoMessageName}
-
 	p, err := os.Create(fmt.Sprintf("./%s", protoOut))
 	if err != nil {
 		log.Panic(err)
 	}
-	t.Execute(p, data)
+	t.Execute(p, generateTmplData(protoOut, records))
 }
