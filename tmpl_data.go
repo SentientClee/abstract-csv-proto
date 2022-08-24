@@ -28,19 +28,33 @@ type enum struct {
 type recordField struct {
 	name       string
 	recordType string
+	units      string
 	startIdx   int
 	endIdx     int
 }
 
+var colFieldName, colFieldType, colFieldUnits, colFieldOptionValues int
+
 func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 	// Remove header
-	records = records[1:]
+	header, records := records[0], records[1:]
+
+	// Assign cols
+	for idx, col := range header {
+		switch col {
+		case "Name":
+			colFieldName = idx
+		case "Type":
+			colFieldType = idx
+		case "Units":
+			colFieldUnits = idx
+		case "Option values":
+			colFieldOptionValues = idx
+		}
+	}
 
 	// Loop through records to figure out field start and end indices
 	recordFields := getRecordFields(records)
-
-	log.Println(records)
-	log.Println(recordFields)
 
 	var protoFields []protoField
 	var enums []enum
@@ -55,6 +69,9 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 		switch recordField.recordType {
 		case "<string>":
 			protoField.FieldType = "string"
+		case "<double>":
+			protoField.Name = fmt.Sprintf("%s_%s", protoField.Name, recordField.units)
+			protoField.FieldType = "double"
 		case "<select>":
 			enum := getEnum(records, recordField)
 			enums = append(enums, enum)
@@ -70,9 +87,6 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 		protoFields = append(protoFields, protoField)
 	}
 
-	log.Println(protoFields)
-	log.Println(enums)
-
 	return abstractTmplData{
 		ProtoMessageName: strcase.ToCamel((strings.Split(protoOut, ".")[0])),
 		ProtoFields:      protoFields,
@@ -85,15 +99,16 @@ func getRecordFields(records [][]string) []recordField {
 
 	for idx, row := range records {
 		// New field
-		if row[0] != "" {
+		if row[colFieldName] != "" {
 			// Add endIndex to previous record field
 			if len(recordFields) > 0 {
 				recordFields[len(recordFields)-1].endIdx = idx - 1
 			}
 
 			recordFields = append(recordFields, recordField{
-				name:       row[0],
-				recordType: row[1],
+				name:       row[colFieldName],
+				recordType: row[colFieldType],
+				units:      row[colFieldUnits],
 				startIdx:   idx,
 			})
 
@@ -112,7 +127,7 @@ func getEnum(records [][]string, recordField recordField) (enum enum) {
 	for i := recordField.startIdx; i < recordField.endIdx; i++ {
 		option := fmt.Sprintf("%s_%s",
 			strcase.ToScreamingSnake(recordField.name),
-			strcase.ToScreamingSnake(records[i][2]))
+			strcase.ToScreamingSnake(records[i][colFieldOptionValues]))
 		enum.Options = append(enum.Options, option)
 	}
 
