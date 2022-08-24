@@ -53,19 +53,16 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 		}
 
 		switch recordField.recordType {
-		case "<select>", "<multiselect>":
-			enumName := strcase.ToCamel(recordField.name)
-			enumOptions := []string{}
-
-			for i := recordField.startIdx; i < recordField.endIdx; i++ {
-				option := fmt.Sprintf("%s_%s",
-					strcase.ToScreamingSnake(recordField.name),
-					strcase.ToScreamingSnake(records[i][2]))
-				enumOptions = append(enumOptions, option)
-			}
-
-			enums = append(enums, enum{Name: enumName, Options: enumOptions})
-			protoField.FieldType = enumName
+		case "<string>":
+			protoField.FieldType = "string"
+		case "<select>":
+			enum := getEnum(records, recordField)
+			enums = append(enums, enum)
+			protoField.FieldType = enum.Name
+		case "<multiselect>":
+			enum := getEnum(records, recordField)
+			enums = append(enums, enum)
+			protoField.FieldType = fmt.Sprintf("repeated %s", enum.Name)
 		default:
 			log.Fatal("Unrecognized recordType fro recordField")
 		}
@@ -107,4 +104,17 @@ func getRecordFields(records [][]string) []recordField {
 	recordFields[len(recordFields)-1].endIdx = len(records)
 
 	return recordFields
+}
+
+func getEnum(records [][]string, recordField recordField) (enum enum) {
+	enum.Name = strcase.ToCamel(recordField.name)
+
+	for i := recordField.startIdx; i < recordField.endIdx; i++ {
+		option := fmt.Sprintf("%s_%s",
+			strcase.ToScreamingSnake(recordField.name),
+			strcase.ToScreamingSnake(records[i][2]))
+		enum.Options = append(enum.Options, option)
+	}
+
+	return
 }

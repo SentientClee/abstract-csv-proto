@@ -12,5 +12,5 @@ message {{ .ProtoMessageName }} {
 
 {{- range .ProtoFields}}
   {{.FieldType}} {{.Name}} = {{.Number}};
-{{end -}}
+{{- end}}
 }
