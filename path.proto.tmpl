@@ -8,19 +8,17 @@ message {{ .ProtoMessageName }} {
     {{$option}} = {{$idx}};
   {{- end}}
   }
-{{end}}
+{{- end}}
 
   message Biopsy {
-  {{- range .ProtoFields}}
-    {{if .IsBiopsyField}}
-    {{.FieldType}} {{.Name}} = {{.Number}};
-    {{end}}
+  {{- range $idx, $field := .BiopsyFields}}
+    {{.FieldType}} {{.Name}} = {{inc $idx}};
   {{- end}}
   }
 
   message Resection {
-  {{- range .ProtoFields}}
-    {{.FieldType}} {{.Name}} = {{.Number}};
+  {{- range $idx, $field := .ResectionFields}}
+    {{.FieldType}} {{.Name}} = {{inc $idx}};
   {{- end}}
   }
 }

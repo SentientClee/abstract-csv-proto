@@ -8,17 +8,16 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-type abstractTmplData struct {
+type pathAbstract struct {
 	ProtoMessageName string
-	ProtoFields      []protoField
+	BiopsyFields     []protoField
+	ResectionFields  []protoField
 	Enums            []enum
 }
 
 type protoField struct {
-	FieldType     string
-	IsBiopsyField bool
-	Name          string
-	Number        int
+	FieldType string
+	Name      string
 }
 
 type enum struct {
@@ -37,7 +36,7 @@ type recordField struct {
 
 var colFieldName, colFieldType, colFieldUnits, colFieldOptionValues, colBiopsyField int
 
-func generateTmplData(protoOut string, records [][]string) abstractTmplData {
+func genPathAbstract(protoOut string, records [][]string) pathAbstract {
 	// Remove header
 	header, records := records[0], records[1:]
 
@@ -60,15 +59,14 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 	// Loop through records to figure out field start and end indices
 	recordFields := getRecordFields(records)
 
-	var protoFields []protoField
+	var resectionFields []protoField
+	var biopsyFields []protoField
 	var enums []enum
 
 	// Loop through recordFields and generate data
-	for idx, recordField := range recordFields {
+	for _, recordField := range recordFields {
 		protoField := protoField{
-			Name:          strcase.ToSnake(recordField.name),
-			Number:        idx + 1,
-			IsBiopsyField: recordField.isBiopsyField,
+			Name: strcase.ToSnake(recordField.name),
 		}
 
 		switch recordField.recordType {
@@ -89,12 +87,16 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 			log.Fatal("Unrecognized recordType fro recordField")
 		}
 
-		protoFields = append(protoFields, protoField)
+		if recordField.isBiopsyField {
+			biopsyFields = append(biopsyFields, protoField)
+		}
+		resectionFields = append(resectionFields, protoField)
 	}
 
-	return abstractTmplData{
+	return pathAbstract{
 		ProtoMessageName: strcase.ToCamel((strings.Split(protoOut, ".")[0])),
-		ProtoFields:      protoFields,
+		BiopsyFields:     biopsyFields,
+		ResectionFields:  resectionFields,
 		Enums:            enums,
 	}
 }
