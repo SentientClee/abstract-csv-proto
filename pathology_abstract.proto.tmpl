@@ -1,0 +1,26 @@
+syntax = "proto3";
+package proto.abstracts;
+
+message {{ .ProtoMessageName }} {
+{{- range .Enums}}
+  enum {{.Name}} {
+  {{- range $idx, $option := .Options}}
+    {{$option}} = {{$idx}};
+  {{- end}}
+  }
+{{end}}
+
+  message Biopsy {
+  {{- range .ProtoFields}}
+    {{if .IsBiopsyField}}
+    {{.FieldType}} {{.Name}} = {{.Number}};
+    {{end}}
+  {{- end}}
+  }
+
+  message Resection {
+  {{- range .ProtoFields}}
+    {{.FieldType}} {{.Name}} = {{.Number}};
+  {{- end}}
+  }
+}

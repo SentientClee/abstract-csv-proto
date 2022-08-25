@@ -15,9 +15,10 @@ type abstractTmplData struct {
 }
 
 type protoField struct {
-	FieldType string
-	Name      string
-	Number    int
+	FieldType     string
+	IsBiopsyField bool
+	Name          string
+	Number        int
 }
 
 type enum struct {
@@ -26,14 +27,15 @@ type enum struct {
 }
 
 type recordField struct {
-	name       string
-	recordType string
-	units      string
-	startIdx   int
-	endIdx     int
+	name          string
+	recordType    string
+	units         string
+	isBiopsyField bool
+	startIdx      int
+	endIdx        int
 }
 
-var colFieldName, colFieldType, colFieldUnits, colFieldOptionValues int
+var colFieldName, colFieldType, colFieldUnits, colFieldOptionValues, colBiopsyField int
 
 func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 	// Remove header
@@ -50,6 +52,8 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 			colFieldUnits = idx
 		case "Option values":
 			colFieldOptionValues = idx
+		case "Biopsy fields":
+			colBiopsyField = idx
 		}
 	}
 
@@ -62,8 +66,9 @@ func generateTmplData(protoOut string, records [][]string) abstractTmplData {
 	// Loop through recordFields and generate data
 	for idx, recordField := range recordFields {
 		protoField := protoField{
-			Name:   strcase.ToSnake(recordField.name),
-			Number: idx + 1,
+			Name:          strcase.ToSnake(recordField.name),
+			Number:        idx + 1,
+			IsBiopsyField: recordField.isBiopsyField,
 		}
 
 		switch recordField.recordType {
@@ -106,10 +111,11 @@ func getRecordFields(records [][]string) []recordField {
 			}
 
 			recordFields = append(recordFields, recordField{
-				name:       row[colFieldName],
-				recordType: row[colFieldType],
-				units:      row[colFieldUnits],
-				startIdx:   idx,
+				name:          row[colFieldName],
+				recordType:    row[colFieldType],
+				units:         row[colFieldUnits],
+				isBiopsyField: row[colBiopsyField] == "TRUE",
+				startIdx:      idx,
 			})
 
 		}

@@ -10,7 +10,7 @@ import (
 	"text/template"
 )
 
-//go:embed abstract.proto.tmpl
+//go:embed pathology_abstract.proto.tmpl
 var templateFile embed.FS
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 		log.Fatalf("Error reading records %s", err)
 	}
 
-	t := template.Must(template.ParseFS(templateFile, "abstract.proto.tmpl"))
+	t := template.Must(template.ParseFS(templateFile, "pathology_abstract.proto.tmpl"))
 	if err != nil {
 		log.Fatalf("Error parsing template %s", err)
 	}
