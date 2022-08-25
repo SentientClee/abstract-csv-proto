@@ -8,8 +8,7 @@ message {{ .ProtoMessageName }} {
     {{$option}} = {{$idx}};
   {{- end}}
   }
-{{- end}}
-
+{{end}}
   message Biopsy {
   {{- range $idx, $field := .BiopsyFields}}
     {{.FieldType}} {{.Name}} = {{inc $idx}};
