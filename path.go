@@ -130,11 +130,12 @@ func getRecordFields(records [][]string) []recordField {
 }
 
 func getEnum(records [][]string, recordField recordField) (enum enum) {
-	enum.Name = strcase.ToCamel(recordField.name)
+	lowerRecordName := strings.ToLower(recordField.name)
+	enum.Name = strcase.ToCamel(lowerRecordName)
 
 	for i := recordField.startIdx; i < recordField.endIdx; i++ {
 		option := fmt.Sprintf("%s_%s",
-			strcase.ToScreamingSnake(recordField.name),
+			strcase.ToScreamingSnake(lowerRecordName),
 			strcase.ToScreamingSnake(records[i][colFieldOptionValues]))
 		enum.Options = append(enum.Options, option)
 	}
