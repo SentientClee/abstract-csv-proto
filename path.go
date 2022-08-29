@@ -84,7 +84,7 @@ func genPathAbstract(protoOut string, records [][]string) pathAbstract {
 			enums = append(enums, enum)
 			protoField.FieldType = fmt.Sprintf("repeated %s", enum.Name)
 		default:
-			log.Fatal("Unrecognized recordType fro recordField")
+			log.Fatalf("Unrecognized recordType %s for recordField %s", recordField.recordType, recordField.name)
 		}
 
 		if recordField.isBiopsyField {
