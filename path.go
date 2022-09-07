@@ -74,7 +74,7 @@ func genPathAbstract(protoOut string, records [][]string) pathAbstract {
 			protoField.FieldType = "string"
 		case "<double>":
 			protoField.Name = fmt.Sprintf("%s_%s", protoField.Name, recordField.units)
-			protoField.FieldType = "double"
+			protoField.FieldType = "optional double"
 		case "<select>":
 			enum := getEnum(records, recordField)
 			enums = append(enums, enum)
